@@ -1,0 +1,12 @@
+name: Chat_hub
+title: Chat_hub
+username: video-call
+account: video-call
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16014211
+bundleId: 11155236
+url: https://video-call.shinyapps.io/Chat_hub/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
