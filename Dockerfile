@@ -1,26 +1,21 @@
-# Use an R runtime as a base image
+# Base image with R + Shiny pre-installed
 FROM rocker/shiny:latest
 
-# Install system libs
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libssl-dev libcurl4-openssl-dev libxml2-dev \
-    && rm -rf /var/lib/apt/lists/*
-    
-# Make a directory in the container
-RUN mkdir /home/chat
+    libssl-dev libcurl4-openssl-dev libxml2-dev libsasl2-dev \
+    curl wget gnupg && \
+    apt-get clean
 
-RUN mkdir /home/chat/WWW
+# Install R packages
+RUN R -e "install.packages(c('shiny','glue','DBI','jsonlite','httr','waiter','shinyToastify','dplyr','mongolite'), repos='https://cloud.r-project.org')"
 
-# Copy the Shiny app files into the container
-COPY app.R /home/chat/app.R
+# Copy app to container
+WORKDIR /app
+COPY . .
 
-COPY google-analytics.html /home/chat/google-analytics.html
-# Install R dependencies
-RUN R -e "install.packages(c('shiny','glue','lubridate','DBI','RSQLite','jsonlite','httr','waiter','shinyToastify','dplyr', 'ggplot2', 'lubridate','magrittr','gargle', 'digest','uuid','blastula','mongolite','googleAuthR'))"
-
-# Expose the application port
-#EXPOSE 8000
+# Expose app port
 EXPOSE 8080
 
-# Command to run the Shiny app
-CMD ["R", "-e", "shiny::runApp('/home/chat/app.R',host='0.0.0.0', port=8080)"]
+# Run Shiny directly (best for container scaling)
+CMD R -e "shiny::runApp('/app', host='0.0.0.0', port=8080)"
