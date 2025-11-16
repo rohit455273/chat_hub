@@ -1,21 +1,24 @@
-# Base image with R + Shiny pre-installed
+# Base image for Shiny apps
 FROM rocker/shiny:latest
 
-# Install system dependencies
+# Install system libraries needed by Shiny + mongolite + curl apps
 RUN apt-get update && apt-get install -y \
-    libssl-dev libcurl4-openssl-dev libxml2-dev libsasl2-dev \
-    curl wget gnupg && \
-    apt-get clean
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libxml2-dev \
+    libsasl2-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install R packages
-RUN R -e "install.packages(c('shiny','glue','DBI','jsonlite','httr','waiter','shinyToastify','dplyr','mongolite'), repos='https://cloud.r-project.org')"
+# Install required R packages
+RUN R -e "install.packages(c('shiny', 'glue', 'DBI', 'jsonlite', 'httr', 'waiter', 'shinyToastify', 'dplyr', 'gargle', 'mongolite'), repos='https://cloud.r-project.org')"
 
-# Copy app to container
-WORKDIR /app
+# Set workdir and copy the app files
+WORKDIR /srv/shiny-server
 COPY . .
 
-# Expose app port
-EXPOSE 8080
+# Expose shiny port
+EXPOSE 3838
 
-# Run Shiny directly (best for container scaling)
-CMD R -e "shiny::runApp('/app', host='0.0.0.0', port=8080)"
+# Start shiny server
+CMD ["/usr/bin/shiny-server"]
